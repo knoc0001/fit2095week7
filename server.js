@@ -21,11 +21,11 @@ app.use(morgan('common'));
 app.listen(8080);
 
 const MongoClient = mongodb.MongoClient;
-const url = "mongodb://localhost:27017/";
+const url = "mongodb://192.168.1.107:27017/";
 
 
-let db;
-let idDB = [];
+var db;
+var idDB = [];
 
 MongoClient.connect(url, { useNewUrlParser: true },
     function (err, client) {
