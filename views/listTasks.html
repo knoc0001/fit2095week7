@@ -17,6 +17,8 @@
             <a href="/updateTask"> Update Task </a>
             <a href="/deleteTask"> Delete Task </a>
             <a href="/clearCompleted"> Clear Completed Tasks </a>
+            <a href="/newDev"> Add New Dev</a>
+            <a href="/listDevs"> List Developers</a>
         </h3>
 
 
@@ -33,12 +35,12 @@
         </tr>
         <% for (let i =0; i< taskDbs.length;i++){ %>
             <tr>
-                <td> <%= taskDbs[i].id %> </td>
-                <td> <%= taskDbs[i].name %> </td>
-                <td> <%= taskDbs[i].assigned %> </td>
-                <td> <%= taskDbs[i].dueDate %> </td>
-                <td> <%= taskDbs[i].status %> </td>
-                <td> <%= taskDbs[i].description %> </td>
+                <td> <%= taskDbs[i].taskID %> </td>
+                <td> <%= taskDbs[i].tName %> </td>
+                <td> <%= taskDbs[i].assignedTo %> </td>
+                <td> <%= taskDbs[i].tDue %> </td>
+                <td> <%= taskDbs[i].tStatus %> </td>
+                <td> <%= taskDbs[i].tDesc %> </td>
             </tr>
         <% }%>
 

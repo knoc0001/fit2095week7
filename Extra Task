@@ -1,0 +1,5 @@
+Add a new GET request to update the first name with a new name for all documents as follows:
+
+http://localhost:8080/oldfirstname/newfirstname
+
+HINT: use req.params to retrieve the two parameters

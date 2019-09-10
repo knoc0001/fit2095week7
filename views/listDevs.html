@@ -1,0 +1,45 @@
+<html>
+<head>
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        table,th,td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1> Developers </h1>
+
+        <h3> <a href="/"> Home</a>
+            <a href="/newTask"> New Task</a>
+            <a href="/listTasks"> List All Tasks</a>
+            <a href="/updateTask"> Update Task </a>
+            <a href="/deleteTask"> Delete Task </a>
+            <a href="/clearCompleted"> Clear Completed Tasks </a>
+            <a href="/newDev"> Add New Dev</a>
+            <a href="/listDevs"> List Developers</a>
+        </h3>
+
+
+    <h3> All Developers </h3>
+
+    <table>
+        <tr>
+            <td>ID</td>
+            <td>Name</td>
+            <td>Level</td>
+            <td>Address</td>
+        </tr>
+        <% for (let i =0; i< devsDbs.length;i++){ %>
+            <tr>
+                <td> <%= devsDbs[i]._id %> </td>
+                <td> <%= devsDbs[i].devName.firstName %> <%= devsDbs[i].devName.lastName %> </td>
+                <td> <%= devsDbs[i].devLevel %> </td>
+                <td> <%= devsDbs[i].devAddress.unit %> <%= devsDbs[i].devAddress.street %>, <%= devsDbs[i].devAddress.suburb %>, <%= devsDbs[i].devAddress.state %> </td>
+            </tr>
+        <% }%>
+
+
+    </body>
+</html>

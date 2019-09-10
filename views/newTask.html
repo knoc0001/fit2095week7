@@ -10,22 +10,20 @@
             <a href="/updateTask"> Update Task </a>
             <a href="/deleteTask"> Delete Task </a>
             <a href="/clearCompleted"> Clear Completed Tasks </a>
+            <a href="/newDev"> Add New Dev</a>
+            <a href="/listDevs"> List Developers</a>
         </h3>
 
     <form action ="/data" method="POST">
         Task Name: <input type="text" name="taskName" /> </br>
         Assigned to: <input type="text" name="tassigned" /> </br>
         Task Due: <input type="date" name="taskDue" /> </br>
-        <!-- Task Status: <input type="text" name="taskStatus" /> <br> -->
-        <!-- Task Status:--> 
         Task Status: 
         <select name="selectStatus">
             <option value = "In Progress">In Progress</option>
             <option value= "Complete">Complete</option>
         </select>
         </br>
-        <!--<label class="radio-inline"><input type="radio" name="inprogress" checked>In Progress</label>
-        <label class="radio-inline"><input type="radio" name="Complete">Complete</label> -->
         Task Desc: <input type="text" name="taskDesc" /> </br>
 
         <button>Submit</button>

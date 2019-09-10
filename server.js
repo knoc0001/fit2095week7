@@ -1,15 +1,15 @@
 const express = require('express');
-const mongodb = require('mongodb');
+var mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-
 const app = express();
 
+let Task = require('./models/task');
+let Developer = require('./models/developer');
 
-//Setup the view Engine
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
-//Setup the static assets directories
+
 app.use(express.static('images'));
 app.use(express.static('css'));
 app.use(express.static('views'));
@@ -18,24 +18,50 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(morgan('common'));
-app.listen(8080);
 
-const MongoClient = mongodb.MongoClient;
-const url = "mongodb://192.168.1.107:27017/";
-
-
-var db;
+const url = "mongodb://0.0.0.0:27017/Week7";
 var idDB = [];
 
-MongoClient.connect(url, { useNewUrlParser: true },
-    function (err, client) {
+mongoose.connect(url, function (err) {
         if (err) {
-            console.log("Err  ", err);
+            console.log('Error in Mongoose connection.');
+            throw err;
         }
-        else {
-            console.log("Connected successfully to server");
-            db = client.db("week6");
-        }
+            
+        console.log("Connected successfully to server");    
+        let dev1 = new Developer({
+            devName: {
+                firstName: 'Reika',
+                lastName: 'Kisshouin'
+            },
+            devLevel: 'BEGINNER',
+            devAddress: {
+                state: 'Kenkyo',
+                suburb: 'Kenjitsu',
+                street: 'O Motto ni Ikite',
+                unit: 'Orimasu'
+            }
+        });
+
+        dev1.save(function(err){
+            if (err) throw err;
+
+            console.log('Dev successfully added to DB');
+
+            var task1 = new Task({
+                taskID: getNewId(),
+                tName: 'Update Novel',
+                assignedTo: dev1._id,
+                tDue: new Date(),
+                tStatus: 'In Progress',
+                tDesc: 'TBA'
+            });
+
+            task1.save(function(err){
+                if(err) throw err;
+                console.log('Task1 successfully added to DB');
+            });
+        });
     });
 
 
@@ -50,35 +76,29 @@ app.get('/newTask', function (req, res) {
 });
 app.post('/data', function (req, res) {
     let taskDetails = req.body;
-    
-    checkUnique(getNewId());
-
-    function checkUnique(generatedID){
-        let newID = generatedID;
-
-        while(idDB.includes(newID)){
-            if(idDB.includes(newID)){
-                newID = getNewID();
-            };
-        };
-
-        idDB.push(newID);
-    };
-
+    idDB.push(getNewId());
     let assignedID = idDB[idDB.length - 1];
-
     let inputStatus = req.body.selectStatus;
+    console.log(`TASK DATE ${taskDetails.taskDue} ~~`);
+    new Task({
+        taskID: assignedID,
+        tName: taskDetails.taskName,
+        assignedTo: mongoose.Types.ObjectId(taskDetails.tassigned),
+        tDue: new Date(taskDetails.taskDue),
+        tStatus: inputStatus,
+        tDesc: taskDetails.taskDesc
+    }).save(function(err){
+        if (err) throw err;
 
-    db.collection('taskDB').insertOne({ id: assignedID, name: taskDetails.taskName,
-    assigned: taskDetails.tassigned, dueDate: taskDetails.taskDue, 
-    status: inputStatus, description: taskDetails.taskDesc});
+        console.log('Task Successfully Inserted to DB.');
+    });
 
     res.redirect('/listTasks');
 });
 app.get('/listTasks', function (req, res) {
-    db.collection('taskDB').find({}).toArray(function (err, data)
-    {
-        res.render('listTasks.html', {taskDbs: data});
+    Task.find().exec(function(err,data){
+        res.render('listTasks.html', {taskDbs:data});
+        //res.send(data);
     });
 });
 app.get('/updateTask', function(req, res){
@@ -88,18 +108,11 @@ app.post('/updateTaskData', function(req, res){
     let taskDetails = req.body;
     let taskNo = parseInt(taskDetails.taskID);
 
-    let filter = { id: taskNo };
-
-    /*
-    let answer = document.getElementById("selectStatus");
-    let updatedStatus = answer.options[express.selectedIndex].text;
-    console.log(updatedStatus);
-    */
-    //let theUpdate = { $set: { status: taskDetails.newTaskStatus }};
     let updatedStatus = req.body.selectStatus2;
-    let theUpdate = { $set: { status: updatedStatus }};
-    db.collection('taskDB').updateOne(filter, theUpdate, {upsert: false}, 
-        function(err, result){
+
+    Task.updateOne({'taskID': taskNo}, { $set: {
+        'tStatus': updatedStatus } }, function(err, doc){
+            console.log(doc);
     });
 
     res.redirect('/listTasks');
@@ -108,21 +121,67 @@ app.get('/deleteTask', function(req, res){
     res.sendFile(__dirname + '/views/deleteTask.html')
 });
 app.post('/deleteTaskData', function (req, res) {
-    let taskDetails = req.body;
-    let taskNo = parseInt(taskDetails.taskID);
-    let filter = { id: taskNo };
-    db.collection('taskDB').deleteOne(filter);
-    res.redirect('/listTasks');
+   let taskDetails = req.body;
+   let taskNo = parseInt(taskDetails.taskID);
+
+   Task.deleteOne(
+       {'taskID': taskNo}, function(err, doc){
+           console.log(doc);
+       }
+   );
+
+   res.redirect('/listTasks');
 });
 app.get('/clearCompleted', function(req, res){
-    db.collection('taskDB').deleteMany( {status: 'Complete'}, 
-    function (err, obj){
-        console.log(obj.result);
+    Task.deleteMany({'tStatus': 'Complete'}, function(err, doc){
+        console.log(doc);
     });
 
     res.redirect('/listTasks');
 });
+app.get('/newDev', function(req, res){
+    res.sendFile(__dirname + '/views/newDev.html');
+});
+app.get('/listDevs', function(req, res){
+    Developer.find().exec(function(err,data){
+        res.render('listDevs.html', {devsDbs:data});
+    });
+});
+app.post('/devData', function(req, res){
+    let devDetails = req.body;
+    let inputStatus = req.body.selLev;
+
+    new Developer({
+        'devName.firstName': devDetails.dFirst,
+        'devName.lastName': devDetails.dLast,
+        'devLevel': inputStatus,
+        'devAddress.state': devDetails.DAstate,
+        'devAddress.suburb': devDetails.DAsub,
+        'devAddress.street': devDetails.DAstreet,
+        'devAddress.unit': devDetails.DAunit
+    }).save(function(err){
+        if (err) throw err;
+
+        console.log('Task Successfully Inserted to DB.');
+    });
+
+    res.redirect('/listDevs');
+});
+app.get('/:oldfirstname/:newfirstname', function(req, res){
+    let oldFName = req.params.oldfirstname;
+    let newFName = req.params.newfirstname;
+
+    Developer.updateMany({'devName.firstName': oldFName}, {$set: {'devName.firstName': newFName}},
+    function(err, doc){
+        console.log(doc);
+    });
+
+    res.redirect('/listDevs');
+});
+
 
 function getNewId() {
     return (Math.floor(100000 + Math.random() * 900000));
-}
+};
+
+app.listen(8080);
